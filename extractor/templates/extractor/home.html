@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+{% block title %}Upload — SmartDocX{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h1 class="text-2xl font-extrabold text-gray-900 dark:text-white">📂 Upload & Extract</h1>
+    <p class="text-sm text-gray-500 mt-1">Upload PDFs or images — data is extracted automatically.</p>
+  </div>
+  <a href="{% url 'history' %}" class="hidden md:inline-flex items-center gap-2 px-4 py-2 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-xl text-sm hover:bg-gray-50 dark:hover:bg-gray-700 transition">
+    📜 View History
+  </a>
+</div>
+
+<!-- Upload Card -->
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-100 dark:border-gray-700 p-8 mb-8">
+  <form id="uploadForm" method="post" enctype="multipart/form-data" class="space-y-5">
+    {% csrf_token %}
+
+    <!-- Drop zone -->
+    <div id="dropZone" class="border-2 border-dashed border-indigo-300 dark:border-indigo-600 rounded-2xl p-10 text-center cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-gray-700 transition">
+      <div id="dropIcon" class="text-5xl mb-3">📁</div>
+      <p class="font-semibold text-gray-700 dark:text-gray-200">Drag & drop files here</p>
+      <p class="text-sm text-gray-400 mt-1">PDF, JPG, JPEG, PNG · up to 10MB · multiple files supported</p>
+      <input type="file" name="documents" id="fileInput" class="hidden" accept=".pdf,.jpg,.jpeg,.png" multiple required>
+      <div id="fileList" class="mt-4 space-y-1 hidden"></div>
+      <button type="button" onclick="document.getElementById('fileInput').click()"
+              class="mt-4 px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition">
+        Browse Files
+      </button>
+    </div>
+
+    <!-- Options row -->
+    <div class="grid md:grid-cols-3 gap-4 items-end">
+      <div class="md:col-span-2">
+        <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Document Type</label>
+        <select name="doc_type" class="w-full p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-indigo-500">
+          <option value="">🔍 Auto-detect</option>
+          <option value="PAN">🪪 PAN Card</option>
+          <option value="AADHAAR">🆔 Aadhaar</option>
+          <option value="GST">🧾 GST Certificate</option>
+          <option value="FSSAI">🍽️ FSSAI License</option>
+          <option value="UDYAM">🏭 Udyam Certificate</option>
+          <option value="DL">🚗 Driving License</option>
+          <option value="RC">🚙 RC Book</option>
+          <option value="AGREEMENT">📜 Agreement</option>
+          <option value="AFFIDAVIT">⚖️ Affidavit</option>
+          <option value="RESUME">📄 Resume / CV</option>
+        </select>
+      </div>
+      <button type="submit" id="submitBtn"
+              class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold shadow transition flex items-center justify-center gap-2">
+        🚀 Upload & Extract
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Tips + Supported -->
+<div class="grid md:grid-cols-2 gap-6 mb-8">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 border border-gray-100 dark:border-gray-700">
+    <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">💡 Tips for best results</h3>
+    <ul class="space-y-2 text-sm text-gray-500 dark:text-gray-400">
+      <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">✓</span> Use clear, high-contrast scans or photos</li>
+      <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">✓</span> Ensure text is not blurry or rotated</li>
+      <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">✓</span> Upload multiple files at once for batch processing</li>
+      <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">✓</span> Use "Auto-detect" unless you know the exact type</li>
+      <li class="flex items-start gap-2"><span class="text-yellow-500 mt-0.5">⚠</span> Duplicate files are detected and skipped automatically</li>
+    </ul>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 border border-gray-100 dark:border-gray-700">
+    <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">� Supported document types</h3>
+    <div class="flex flex-wrap gap-2">
+      <span class="px-2.5 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 font-medium">PAN</span>
+      <span class="px-2.5 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 font-medium">AADHAAR</span>
+      <span class="px-2.5 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 font-medium">GST</span>
+      <span class="px-2.5 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 font-medium">FSSAI</span>
+      <span class="px-2.5 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 font-medium">UDYAM</span>
+      <span class="px-2.5 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 font-medium">DL</span>
+      <span class="px-2.5 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 font-medium">RC</span>
+      <span class="px-2.5 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 font-medium">RESUME</span>
+      <span class="px-2.5 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 font-medium">AGREEMENT</span>
+      <span class="px-2.5 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 font-medium">AFFIDAVIT</span>
+    </div>
+    <p class="text-xs text-gray-400 mt-3">Formats: PDF · JPG · JPEG · PNG</p>
+  </div>
+</div>
+
+<!-- Recent History -->
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-100 dark:border-gray-700 overflow-hidden">
+  <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+    <h2 class="font-semibold text-gray-700 dark:text-gray-200">Recent Documents</h2>
+    <div class="flex gap-2">
+      <a href="{% url 'home' %}?export=csv" class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium transition">⬇ CSV</a>
+      <a href="{% url 'home' %}?export=excel" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition">⬇ Excel</a>
+      <a href="{% url 'history' %}" class="px-3 py-1.5 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg text-xs hover:bg-gray-50 dark:hover:bg-gray-700 transition">All History →</a>
+    </div>
+  </div>
+  <div class="overflow-x-auto">
+    <table class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700/50 text-xs text-gray-500 uppercase tracking-wide">
+        <tr>
+          <th class="px-6 py-3 text-left">File</th>
+          <th class="px-6 py-3 text-left">Type</th>
+          <th class="px-6 py-3 text-left">Uploaded</th>
+          <th class="px-6 py-3 text-left">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
+        {% for doc in documents %}
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
+          <td class="px-6 py-3 font-medium text-gray-800 dark:text-gray-200 max-w-xs truncate">{{ doc.short_name }}</td>
+          <td class="px-6 py-3">
+            <span class="px-2 py-0.5 rounded-full text-xs font-semibold
+              {% if doc.doc_type == 'PAN' %}bg-green-100 text-green-700
+              {% elif doc.doc_type == 'AADHAAR' %}bg-yellow-100 text-yellow-700
+              {% elif doc.doc_type == 'GST' %}bg-blue-100 text-blue-700
+              {% elif doc.doc_type == 'FSSAI' %}bg-purple-100 text-purple-700
+              {% elif doc.doc_type == 'UDYAM' %}bg-orange-100 text-orange-700
+              {% elif doc.doc_type == 'RESUME' %}bg-cyan-100 text-cyan-700
+              {% else %}bg-gray-100 text-gray-600{% endif %}">
+              {{ doc.doc_type }}
+            </span>
+          </td>
+          <td class="px-6 py-3 text-gray-500 text-xs">{{ doc.uploaded_at|date:"M d, Y H:i" }}</td>
+          <td class="px-6 py-3">
+            <div class="flex gap-2">
+              <button onclick="openModal('{{ doc.id }}')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs transition">Quick View</button>
+              <a href="{% url 'document_detail' doc.id %}" class="px-3 py-1 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg text-xs hover:bg-gray-50 dark:hover:bg-gray-700 transition">Detail</a>
+            </div>
+            {% with sid="doc-data-"|add:doc.id %}{{ doc.extracted_data|json_script:sid }}{% endwith %}
+          </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="4" class="px-6 py-12 text-center text-gray-400">
+          <div class="text-4xl mb-2">📭</div>
+          <p>No documents yet. Upload your first one above.</p>
+        </td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal -->
+<div id="dataModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+      <h3 class="font-semibold">📑 Extracted Data</h3>
+      <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-sm hover:bg-gray-200 transition">✕</button>
+    </div>
+    <pre id="modalContent" class="px-6 py-4 bg-gray-50 dark:bg-gray-900 text-xs max-h-80 overflow-y-auto font-mono"></pre>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-700">
+      <button onclick="dlJSON()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm transition">⬇ JSON</button>
+      <button onclick="dlCSV()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition">⬇ CSV</button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading overlay -->
+<div id="loadingOverlay" class="hidden fixed inset-0 bg-black/60 z-[200] flex items-center justify-center">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-2xl">
+    <div class="animate-spin rounded-full h-14 w-14 border-4 border-indigo-200 border-t-indigo-600 mx-auto mb-4"></div>
+    <p class="font-semibold text-gray-700 dark:text-gray-200">Processing documents...</p>
+    <p class="text-xs text-gray-400 mt-1">OCR + extraction in progress</p>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const fileList  = document.getElementById('fileList');
+
+dropZone.addEventListener('click', e => { if (e.target.tagName !== 'BUTTON') fileInput.click(); });
+fileInput.addEventListener('change', updateFileList);
+['dragover','dragenter'].forEach(e => dropZone.addEventListener(e, ev => {
+  ev.preventDefault(); dropZone.classList.add('border-indigo-500','bg-indigo-50','dark:bg-gray-700');
+}));
+['dragleave','dragend'].forEach(e => dropZone.addEventListener(e, () =>
+  dropZone.classList.remove('border-indigo-500','bg-indigo-50','dark:bg-gray-700')
+));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('border-indigo-500','bg-indigo-50');
+  fileInput.files = e.dataTransfer.files;
+  updateFileList();
+});
+
+function updateFileList() {
+  const files = Array.from(fileInput.files);
+  if (!files.length) return;
+  fileList.innerHTML = files.map(f =>
+    '<div class="inline-flex items-center gap-2 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-3 py-1 rounded-lg text-xs font-medium">📄 ' + f.name + ' <span class="opacity-60">(' + (f.size/1024).toFixed(1) + ' KB)</span></div>'
+  ).join('');
+  fileList.classList.remove('hidden');
+  document.getElementById('dropIcon').textContent = '✅';
+}
+
+document.getElementById('uploadForm').addEventListener('submit', () =>
+  document.getElementById('loadingOverlay').classList.remove('hidden')
+);
+
+let modalData = {};
+function openModal(id) {
+  const el = document.getElementById('doc-data-' + id);
+  try { modalData = JSON.parse(el.textContent); } catch(e) { modalData = {}; }
+  const flat = {};
+  Object.entries(modalData).forEach(([k,v]) => { flat[k] = (v && typeof v==='object' && 'value' in v) ? v.value : v; });
+  modalData = flat;
+  document.getElementById('modalContent').textContent = JSON.stringify(modalData, null, 2);
+  const m = document.getElementById('dataModal');
+  m.classList.remove('hidden'); m.classList.add('flex');
+}
+function closeModal() {
+  const m = document.getElementById('dataModal');
+  m.classList.add('hidden'); m.classList.remove('flex');
+}
+function dlJSON() {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(modalData,null,2)],{type:'application/json'}));
+  a.download = 'extracted.json'; a.click();
+}
+function dlCSV() {
+  const rows = [Object.keys(modalData).join(','), Object.values(modalData).map(v=>JSON.stringify(v)).join(',')];
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));
+  a.download = 'extracted.csv'; a.click();
+}
+</script>
+{% endblock %}

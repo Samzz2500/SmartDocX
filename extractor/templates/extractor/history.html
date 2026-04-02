@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}History — SmartDocX{% endblock %}
+{% block content %}
+
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h1 class="text-2xl font-extrabold text-gray-900 dark:text-white">📜 Document History</h1>
+    <p class="text-sm text-gray-500 mt-1">All your extracted documents in one place.</p>
+  </div>
+  <div class="flex gap-2">
+    <a href="{% url 'home' %}?export=csv" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-medium transition">⬇ CSV</a>
+    <a href="{% url 'home' %}?export=excel" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition">⬇ Excel</a>
+    <a href="{% url 'compare_docs' %}" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition">🔀 Compare</a>
+  </div>
+</div>
+
+<!-- Filters -->
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-5 mb-6 border border-gray-100 dark:border-gray-700">
+  <form id="histFilter" method="get" action="{% url 'history' %}" class="grid grid-cols-2 md:grid-cols-6 gap-3">
+    <input name="q" value="{{ q }}" placeholder="🔎 Search..." class="p-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-indigo-500 col-span-2 md:col-span-1">
+    <select name="type" class="p-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-indigo-500">
+      <option value="">All Types</option>
+      <option value="PAN" {% if type == 'PAN' %}selected{% endif %}>PAN</option>
+      <option value="AADHAAR" {% if type == 'AADHAAR' %}selected{% endif %}>Aadhaar</option>
+      <option value="GST" {% if type == 'GST' %}selected{% endif %}>GST</option>
+      <option value="FSSAI" {% if type == 'FSSAI' %}selected{% endif %}>FSSAI</option>
+      <option value="UDYAM" {% if type == 'UDYAM' %}selected{% endif %}>Udyam</option>
+      <option value="RESUME" {% if type == 'RESUME' %}selected{% endif %}>Resume</option>
+      <option value="DL" {% if type == 'DL' %}selected{% endif %}>DL</option>
+    </select>
+    <input type="date" name="start" value="{{ start }}" class="p-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-indigo-500">
+    <input type="date" name="end" value="{{ end }}" class="p-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-indigo-500">
+    <input type="number" name="min_conf" min="0" max="100" value="{{ min_conf }}" placeholder="Min Conf %"
+           class="p-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-indigo-500">
+    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 text-sm font-medium transition">Apply</button>
+  </form>
+</div>
+
+<!-- Cards Grid -->
+<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+  {% for doc in documents %}
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-100 dark:border-gray-700 p-5 hover:shadow-lg hover:-translate-y-0.5 transition">
+    <div class="flex items-start justify-between mb-3">
+      <div class="flex-1 min-w-0">
+        <p class="font-semibold text-gray-800 dark:text-gray-200 truncate">{{ doc.short_name }}</p>
+        <p class="text-xs text-gray-400 mt-0.5">{{ doc.uploaded_at|date:"M d, Y · H:i" }}</p>
+      </div>
+      <span class="ml-2 flex-shrink-0 px-2 py-0.5 rounded-full text-xs font-semibold
+        {% if doc.doc_type == 'PAN' %}bg-green-100 text-green-700
+        {% elif doc.doc_type == 'AADHAAR' %}bg-yellow-100 text-yellow-700
+        {% elif doc.doc_type == 'GST' %}bg-blue-100 text-blue-700
+        {% elif doc.doc_type == 'FSSAI' %}bg-purple-100 text-purple-700
+        {% elif doc.doc_type == 'UDYAM' %}bg-orange-100 text-orange-700
+        {% elif doc.doc_type == 'RESUME' %}bg-cyan-100 text-cyan-700
+        {% else %}bg-gray-100 text-gray-600{% endif %}">
+        {{ doc.doc_type }}
+      </span>
+    </div>
+    {% if doc.confidence %}
+    <div class="mb-3">
+      <div class="flex justify-between text-xs text-gray-400 mb-1">
+        <span>Confidence</span><span>{{ doc.confidence|floatformat:0 }}%</span>
+      </div>
+      <div class="w-full bg-gray-100 dark:bg-gray-700 rounded-full h-1.5">
+        <div class="h-1.5 rounded-full {% if doc.confidence >= 80 %}bg-green-500{% elif doc.confidence >= 50 %}bg-yellow-500{% else %}bg-red-400{% endif %}"
+             style="width: {{ doc.confidence|floatformat:0 }}%"></div>
+      </div>
+    </div>
+    {% endif %}
+    <div class="flex gap-2 mt-3">
+      <a href="{% url 'document_detail' doc.id %}" class="flex-1 text-center px-3 py-1.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs font-medium transition">View Detail</a>
+      <a href="{% url 'download_json' doc.id %}" class="px-3 py-1.5 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg text-xs hover:bg-gray-50 dark:hover:bg-gray-700 transition">JSON</a>
+      <a href="{% url 'download_csv' doc.id %}" class="px-3 py-1.5 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg text-xs hover:bg-gray-50 dark:hover:bg-gray-700 transition">CSV</a>
+    </div>
+  </div>
+  {% empty %}
+  <div class="col-span-3 text-center py-20 text-gray-400">
+    <div class="text-5xl mb-4">📭</div>
+    <p class="text-lg font-medium">No documents found</p>
+    <p class="text-sm mt-1">Try adjusting your filters or <a href="{% url 'home' %}" class="text-indigo-600 hover:underline">upload a document</a>.</p>
+  </div>
+  {% endfor %}
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+const f = document.getElementById('histFilter');
+let tt;
+f.addEventListener('input', () => { clearTimeout(tt); tt = setTimeout(() => f.submit(), 400); });
+</script>
+{% endblock %}

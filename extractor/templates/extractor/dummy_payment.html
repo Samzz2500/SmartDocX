@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-3xl mx-auto mt-16 bg-white shadow-xl rounded-2xl p-10">
+
+  <!-- Header -->
+  <h1 class="text-3xl font-bold text-center mb-8">💳 Checkout</h1>
+  
+  <!-- Plan Summary -->
+  <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-6 mb-8 text-center">
+    <h2 class="text-xl font-semibold text-gray-800">{{ plan.name }} Plan</h2>
+    <p class="text-gray-600">🎟 <b>{{ plan.tokens }}</b> Tokens</p>
+    <p class="text-gray-600">⏳ Valid for <b>{{ plan.duration_days }}</b> Days</p>
+    <p class="text-3xl font-bold text-gray-900 mt-3">₹{{ plan.price }}</p>
+  </div>
+
+  <!-- Fake Payment Form -->
+  <form method="post" action="{% url 'payment_success' plan.id %}" class="space-y-6">
+    {% csrf_token %}
+
+    <!-- Card Number -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Card Number</label>
+      <input type="text" required class="w-full mt-1 p-3 border rounded-xl focus:ring-2 focus:ring-blue-400" placeholder="1234 5678 9012 3456">
+    </div>
+
+    <!-- Expiry & CVV -->
+    <div class="grid grid-cols-2 gap-6">
+      <div>
+        <label class="block text-sm font-medium text-gray-700">Expiry</label>
+        <input type="text" required class="w-full mt-1 p-3 border rounded-xl focus:ring-2 focus:ring-blue-400" placeholder="MM/YY">
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700">CVV</label>
+        <input type="password" required class="w-full mt-1 p-3 border rounded-xl focus:ring-2 focus:ring-blue-400" placeholder="123">
+      </div>
+    </div>
+
+    <!-- Cardholder Name -->
+    <div>
+      <label class="block text-sm font-medium text-gray-700">Cardholder Name</label>
+      <input type="text" required class="w-full mt-1 p-3 border rounded-xl focus:ring-2 focus:ring-blue-400" placeholder="John Doe">
+    </div>
+
+    <!-- Pay Button -->
+    <button type="submit" 
+      class="w-full bg-gradient-to-r from-green-500 to-emerald-600 text-white py-3 px-6 rounded-xl font-semibold shadow-lg hover:from-green-600 hover:to-emerald-700 transition">
+      ✅ Pay ₹{{ plan.price }} & Activate Plan
+    </button>
+  </form>
+</div>
+
+{% endblock %}

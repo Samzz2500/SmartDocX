@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block title %}Register — SmartDocX{% endblock %}
+{% block content %}
+
+<div class="min-h-[75vh] flex items-center justify-center">
+  <div class="w-full max-w-md">
+    <div class="text-center mb-8">
+      <div class="w-14 h-14 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-black text-2xl shadow-lg mx-auto mb-4">S</div>
+      <h1 class="text-2xl font-extrabold text-gray-900 dark:text-white">Create your account</h1>
+      <p class="text-gray-500 text-sm mt-1">Join SmartDocX and start extracting documents for free</p>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-8">
+      {% if form.non_field_errors %}
+      <div class="mb-5 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-xl p-3 text-sm text-red-700 dark:text-red-300">
+        {{ form.non_field_errors }}
+      </div>
+      {% endif %}
+
+      <form method="post" class="space-y-4">
+        {% csrf_token %}
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1.5">Username</label>
+          {{ form.username }}
+          {% if form.username.errors %}<p class="text-red-500 text-xs mt-1">{{ form.username.errors|striptags }}</p>{% endif %}
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1.5">Email</label>
+          {{ form.email }}
+          {% if form.email.errors %}<p class="text-red-500 text-xs mt-1">{{ form.email.errors|striptags }}</p>{% endif %}
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1.5">Password</label>
+          {{ form.password1 }}
+          {% if form.password1.errors %}<p class="text-red-500 text-xs mt-1">{{ form.password1.errors|striptags }}</p>{% endif %}
+        </div>
+        <div>
+          <label class="block text-sm font-semibold text-gray-700 dark:text-gray-200 mb-1.5">Confirm Password</label>
+          {{ form.password2 }}
+          {% if form.password2.errors %}<p class="text-red-500 text-xs mt-1">{{ form.password2.errors|striptags }}</p>{% endif %}
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-3 rounded-xl font-semibold shadow transition mt-2">
+          Create Account →
+        </button>
+      </form>
+
+      <div class="mt-6 pt-5 border-t border-gray-100 dark:border-gray-700 text-center">
+        <p class="text-sm text-gray-500">
+          Already have an account?
+          <a href="{% url 'login' %}" class="text-indigo-600 font-semibold hover:underline">Sign in</a>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

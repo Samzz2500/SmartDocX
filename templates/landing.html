@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block content %}
+
+<!-- Hero -->
+<div class="bg-gradient-to-r from-blue-600 to-indigo-700 text-white">
+  <div class="max-w-7xl mx-auto text-center py-24 px-6" data-aos="fade-up">
+    <h1 class="text-5xl font-extrabold mb-4">📄 SmartDoc Extractor</h1>
+    <p class="text-lg mb-6 opacity-90">Extract, organize, and validate your documents with AI-powered accuracy.</p>
+    {% if user.is_authenticated %}
+      <a href="{% url 'home' %}"
+         class="px-8 py-4 bg-white text-blue-700 rounded-full font-semibold shadow-lg hover:bg-gray-100">
+        Upload Document 🚀
+      </a>
+    {% else %}
+      <div class="flex justify-center gap-4">
+        <a href="{% url 'login' %}"
+           class="px-8 py-4 bg-white text-blue-700 rounded-full font-semibold shadow-lg hover:bg-gray-100">Login</a>
+        <a href="{% url 'register' %}"
+           class="px-8 py-4 bg-indigo-500 hover:bg-indigo-600 text-white rounded-full font-semibold shadow-lg">Try Now</a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Features -->
+<div id="features" class="max-w-7xl mx-auto py-20 grid md:grid-cols-3 gap-8 px-6">
+  <div class="p-6 bg-white rounded-xl shadow hover:shadow-lg transition text-center" data-aos="fade-up" data-aos-delay="0">
+    <h3 class="text-xl font-bold mb-2">⚡ Fast Extraction</h3>
+    <p class="text-gray-600">Upload PDFs or images and get structured data instantly.</p>
+  </div>
+  <div class="p-6 bg-white rounded-xl shadow hover:shadow-lg transition text-center" data-aos="fade-up" data-aos-delay="100">
+    <h3 class="text-xl font-bold mb-2">📊 Analytics</h3>
+    <p class="text-gray-600">Track your usage with visual dashboards and reports.</p>
+  </div>
+  <div class="p-6 bg-white rounded-xl shadow hover:shadow-lg transition text-center" data-aos="fade-up" data-aos-delay="200">
+    <h3 class="text-xl font-bold mb-2">🔒 Secure</h3>
+    <p class="text-gray-600">Your data stays private. No third-party sharing.</p>
+  </div>
+</div>
+
+<!-- How It Works -->
+<div id="how" class="bg-gray-100 py-20">
+  <div class="max-w-7xl mx-auto px-6">
+    <h2 class="text-3xl font-bold text-center mb-10">🧭 How It Works</h2>
+    <div class="grid md:grid-cols-4 gap-6">
+      <div class="p-6 bg-white rounded-2xl shadow" data-aos="fade-up">
+        <div class="text-3xl">1️⃣</div>
+        <h3 class="font-bold mt-2">Create/Login</h3>
+        <p class="text-gray-600">Sign up or log in to access your dashboard.</p>
+      </div>
+      <div class="p-6 bg-white rounded-2xl shadow" data-aos="fade-up" data-aos-delay="100">
+        <div class="text-3xl">2️⃣</div>
+        <h3 class="font-bold mt-2">Upload</h3>
+        <p class="text-gray-600">Drag & drop PDF or image documents on the Upload page.</p>
+      </div>
+      <div class="p-6 bg-white rounded-2xl shadow" data-aos="fade-up" data-aos-delay="200">
+        <div class="text-3xl">3️⃣</div>
+        <h3 class="font-bold mt-2">Auto-Extract</h3>
+        <p class="text-gray-600">OCR + smart regex parses key fields instantly.</p>
+      </div>
+      <div class="p-6 bg-white rounded-2xl shadow" data-aos="fade-up" data-aos-delay="300">
+        <div class="text-3xl">4️⃣</div>
+        <h3 class="font-bold mt-2">Review & Export</h3>
+        <p class="text-gray-600">Open details, preview JSON, and export CSV/JSON.</p>
+      </div>
+    </div>
+    <div class="text-center mt-8">
+      <a href="{% url 'home' %}" class="inline-block px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow">Start Extracting</a>
+    </div>
+  </div>
+</div>
+
+<!-- Use Cases -->
+<div class="max-w-7xl mx-auto py-16 px-6">
+  <h2 class="text-3xl font-bold text-center mb-10">🎯 Popular Use Cases</h2>
+  <div class="grid md:grid-cols-3 gap-6">
+    <div class="bg-white rounded-2xl shadow p-6" data-aos="zoom-in"><h3 class="font-semibold mb-2">KYC & Compliance</h3><p class="text-gray-600">Extract PAN, Aadhaar, GST quickly for onboarding.</p></div>
+    <div class="bg-white rounded-2xl shadow p-6" data-aos="zoom-in" data-aos-delay="100"><h3 class="font-semibold mb-2">FSSAI / Udyam</h3><p class="text-gray-600">Capture license numbers and validity dates.</p></div>
+    <div class="bg-white rounded-2xl shadow p-6" data-aos="zoom-in" data-aos-delay="200"><h3 class="font-semibold mb-2">Resume Parsing</h3><p class="text-gray-600">Auto-detect skills, education and experience.</p></div>
+  </div>
+</div>
+
+<!-- Supported Types -->
+<div class="bg-white py-12">
+  <div class="max-w-7xl mx-auto px-6">
+    <h2 class="text-2xl font-bold mb-4">🧾 Supported Documents</h2>
+    <div class="flex flex-wrap gap-2">
+      <span class="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700">PAN</span>
+      <span class="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700">AADHAAR</span>
+      <span class="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700">GST</span>
+      <span class="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700">FSSAI</span>
+      <span class="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700">UDYAM</span>
+      <span class="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700">RESUME</span>
+    </div>
+  </div>
+</div>
+
+<!-- Screenshots / Gallery (placeholders) -->
+<div class="bg-gray-50 py-16">
+  <div class="max-w-7xl mx-auto px-6">
+    <h2 class="text-2xl font-bold mb-6">🖼️ Inside the App</h2>
+    <div class="grid md:grid-cols-3 gap-6">
+      <div class="h-48 rounded-2xl bg-gradient-to-br from-indigo-100 to-blue-100 shadow flex items-center justify-center text-gray-500">Upload UI</div>
+      <div class="h-48 rounded-2xl bg-gradient-to-br from-indigo-100 to-blue-100 shadow flex items-center justify-center text-gray-500">Dashboard KPIs</div>
+      <div class="h-48 rounded-2xl bg-gradient-to-br from-indigo-100 to-blue-100 shadow flex items-center justify-center text-gray-500">Detail & Export</div>
+    </div>
+  </div>
+</div>
+
+<!-- FAQ -->
+<div class="max-w-7xl mx-auto py-16 px-6">
+  <h2 class="text-2xl font-bold mb-6">❓ Frequently Asked Questions</h2>
+  <div class="space-y-4">
+    <details class="bg-white rounded-xl shadow p-4"><summary class="font-semibold cursor-pointer">What files are supported?</summary><p class="text-gray-600 mt-2">PDF, JPG, JPEG, PNG.</p></details>
+    <details class="bg-white rounded-xl shadow p-4"><summary class="font-semibold cursor-pointer">Is my data safe?</summary><p class="text-gray-600 mt-2">Yes — processed locally on server; no third-party sharing.</p></details>
+    <details class="bg-white rounded-xl shadow p-4"><summary class="font-semibold cursor-pointer">Can I export results?</summary><p class="text-gray-600 mt-2">Yes — JSON and CSV from the detail view, plus print-to-PDF.</p></details>
+  </div>
+  <div class="text-center mt-8">
+    {% if user.is_authenticated %}
+      <a href="{% url 'home' %}" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl">Go to Upload</a>
+    {% else %}
+      <a href="{% url 'register' %}" class="px-8 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl">Get Started</a>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Testimonials -->
+<div id="testimonials" class="max-w-7xl mx-auto py-20 text-center px-6">
+  <h2 class="text-3xl font-bold mb-10">💬 What Our Users Say</h2>
+  <div class="grid md:grid-cols-2 gap-8">
+    <div class="p-6 bg-white rounded-xl shadow hover:shadow-lg transition" data-aos="fade-right">
+      <p>"This tool saved me hours of manual work! Super accurate."</p>
+      <span class="block mt-2 font-semibold">– Raj, Startup Founder</span>
+    </div>
+    <div class="p-6 bg-white rounded-xl shadow hover:shadow-lg transition" data-aos="fade-left">
+      <p>"Best document extractor I’ve ever used, and so simple."</p>
+      <span class="block mt-2 font-semibold">– Meera, Accountant</span>
+    </div>
+  </div>
+</div>
+
+{% endblock %}

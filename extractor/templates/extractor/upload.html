@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="max-w-4xl mx-auto mt-10 space-y-10">
+
+  <!-- Upload Section -->
+  <div class="bg-gradient-to-r from-blue-50 to-indigo-50 p-8 rounded-2xl shadow">
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">📂 Upload Document</h2>
+    
+    <form method="post" enctype="multipart/form-data" class="space-y-6">
+      {% csrf_token %}
+
+      <!-- File Input -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">Choose File</label>
+        <input type="file" name="document" accept=".pdf,.jpg,.jpeg,.png"
+               class="block w-full p-3 border rounded-xl focus:ring-2 focus:ring-blue-500 focus:outline-none">
+      </div>
+
+      <!-- Submit -->
+      <button type="submit"
+        class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-6 rounded-xl font-semibold shadow hover:from-blue-700 hover:to-indigo-700 transition">
+        🚀 Upload & Extract
+      </button>
+    </form>
+  </div>
+
+  <!-- Results Section -->
+  {% if data %}
+  <div class="bg-white p-8 rounded-2xl shadow">
+    <h3 class="text-xl font-semibold text-gray-800 mb-4">📑 Extracted Data</h3>
+    <p class="text-gray-700 mb-2"><b>Type:</b> {{ doc_type }}</p>
+
+    <pre class="bg-gray-50 p-4 rounded-xl text-sm overflow-x-auto border">{{ data|safe }}</pre>
+
+    <div class="mt-4">
+      <span class="inline-block bg-green-100 text-green-700 px-4 py-2 rounded-lg text-sm">
+        ✅ Remaining Tokens: <b>{{ remaining_tokens }}</b>
+      </span>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+
+{% endblock %}

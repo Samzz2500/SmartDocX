@@ -1,0 +1,342 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — SmartDocX{% endblock %}
+{% block content %}
+
+<!-- Header -->
+<div class="flex items-center justify-between mb-8">
+  <div>
+    <h1 class="text-2xl font-extrabold text-gray-900 dark:text-white">Welcome back, {{ request.user.username }} 👋</h1>
+    <p class="text-sm text-gray-500 mt-1">Here's what's happening with your documents today.</p>
+  </div>
+  <a href="{% url 'home' %}" class="hidden md:inline-flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-semibold text-sm shadow transition">
+    📂 Upload New
+  </a>
+</div>
+
+<!-- KPI Cards -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-5 border border-gray-100 dark:border-gray-700">
+    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Today</p>
+    <p class="text-3xl font-extrabold text-gray-900 dark:text-white">{{ usage_today }}</p>
+    <p class="text-xs text-gray-400 mt-1">docs processed</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-5 border border-gray-100 dark:border-gray-700">
+    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">This Month</p>
+    <p class="text-3xl font-extrabold text-gray-900 dark:text-white">{{ usage_month }}</p>
+    <p class="text-xs text-gray-400 mt-1">docs processed</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-5 border border-gray-100 dark:border-gray-700">
+    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Total Docs</p>
+    <p class="text-3xl font-extrabold text-gray-900 dark:text-white">{{ total_docs }}</p>
+    <p class="text-xs text-gray-400 mt-1">all time</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-5 border border-gray-100 dark:border-gray-700">
+    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2">Tokens</p>
+    {% if unlimited_tokens %}
+      <p class="text-2xl font-extrabold text-green-500">∞</p>
+      <p class="text-xs text-green-400 mt-1">unlimited</p>
+    {% else %}
+      <p class="text-3xl font-extrabold text-gray-900 dark:text-white">{{ remaining_tokens }}</p>
+      <p class="text-xs text-gray-400 mt-1">remaining</p>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Charts -->
+<div class="grid md:grid-cols-2 gap-6 mb-8">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 border border-gray-100 dark:border-gray-700">
+    <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-4">Documents by Type</h3>
+    <canvas id="docTypeChart" height="200"></canvas>
+    <p id="noChartData" class="hidden text-center text-gray-400 text-sm py-8">No documents yet.</p>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 border border-gray-100 dark:border-gray-700">
+    <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-4">Token Usage</h3>
+    {% if unlimited_tokens %}
+      <div class="flex flex-col items-center justify-center h-40 gap-3">
+        <div class="w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-3xl">♾️</div>
+        <p class="text-green-600 font-semibold text-sm">Unlimited Plan Active</p>
+        <a href="{% url 'subscription_plans' %}" class="text-xs text-indigo-500 hover:underline">Manage subscription →</a>
+      </div>
+    {% else %}
+      <canvas id="tokenPie" height="200"></canvas>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Insight + Activity -->
+<div class="grid md:grid-cols-3 gap-6 mb-8">
+  <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-2xl shadow p-6 text-white">
+    <p class="text-xs font-semibold uppercase tracking-wide opacity-70 mb-2">Top Insight</p>
+    <p class="text-lg font-bold mb-1">Most processed: <span class="text-yellow-300">{{ insights.top_type }}</span></p>
+    <p class="text-sm opacity-80 mt-2">{{ total_docs }} total documents processed.</p>
+    <a href="{% url 'history' %}" class="mt-4 inline-block text-xs bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-lg transition">View History →</a>
+  </div>
+  <div class="md:col-span-2 bg-white dark:bg-gray-800 rounded-2xl shadow p-6 border border-gray-100 dark:border-gray-700">
+    <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-4">Recent Activity</h3>
+    <ul class="space-y-2 max-h-48 overflow-y-auto">
+      {% for ev in recent_activity %}
+      <li class="flex items-center gap-3 text-sm py-1.5 border-b border-gray-50 dark:border-gray-700 last:border-0">
+        <span class="w-2 h-2 rounded-full bg-indigo-400 flex-shrink-0"></span>
+        <span class="text-gray-400 text-xs w-24 flex-shrink-0">{{ ev.created_at|timesince }} ago</span>
+        <span class="text-gray-700 dark:text-gray-200 flex-1">{{ ev.action }}</span>
+        <span class="text-xs px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">{{ ev.doc_type }}</span>
+      </li>
+      {% empty %}
+      <li class="text-sm text-gray-400 text-center py-6">No activity yet. Upload your first document!</li>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+
+<!-- Upload -->
+<div class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl shadow p-8 mb-8 border border-indigo-100 dark:border-gray-600">
+  <div class="flex items-center gap-3 mb-5">
+    <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white text-lg">📤</div>
+    <div>
+      <h2 class="text-lg font-bold text-gray-900 dark:text-white">Quick Upload</h2>
+      <p class="text-xs text-gray-500">PDF, JPG, JPEG, PNG · Max 10MB</p>
+    </div>
+  </div>
+  <form id="uploadForm" method="post" enctype="multipart/form-data" class="space-y-4" action="{% url 'dashboard' %}">
+    {% csrf_token %}
+    <div id="dropZone" class="border-2 border-dashed border-indigo-300 dark:border-indigo-600 rounded-xl p-8 text-center cursor-pointer bg-white dark:bg-gray-800 hover:border-indigo-500 hover:bg-indigo-50 dark:hover:bg-gray-700 transition">
+      <div class="text-4xl mb-2">📁</div>
+      <p class="text-gray-600 dark:text-gray-300 font-medium">Drag & drop your file here</p>
+      <p class="text-xs text-gray-400 mt-1">or click to browse</p>
+      <input type="file" name="document" id="fileInput" class="hidden" accept=".pdf,.jpg,.jpeg,.png" required>
+      <div id="filePreview" class="hidden mt-3 inline-flex items-center gap-2 bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 px-3 py-1.5 rounded-lg text-sm font-medium"></div>
+    </div>
+    <div class="grid md:grid-cols-2 gap-4">
+      <select name="doc_type" class="p-3 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 focus:ring-2 focus:ring-indigo-500 text-sm">
+        <option value="">🔍 Auto-detect type</option>
+        <option value="PAN">🪪 PAN Card</option>
+        <option value="AADHAAR">🆔 Aadhaar</option>
+        <option value="GST">🧾 GST Certificate</option>
+        <option value="FSSAI">🍽️ FSSAI License</option>
+        <option value="UDYAM">🏭 Udyam Certificate</option>
+        <option value="DL">🚗 Driving License</option>
+        <option value="RC">🚙 RC Book</option>
+        <option value="AGREEMENT">📜 Agreement</option>
+        <option value="AFFIDAVIT">⚖️ Affidavit</option>
+        <option value="RESUME">📄 Resume / CV</option>
+      </select>
+      <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-3 rounded-xl font-semibold shadow transition">
+        🚀 Upload & Extract
+      </button>
+    </div>
+  </form>
+</div>
+
+<!-- Filters -->
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-5 mb-6 border border-gray-100 dark:border-gray-700">
+  <form id="filterForm" method="get" action="{% url 'dashboard' %}" class="grid grid-cols-2 md:grid-cols-5 gap-3">
+    <input name="search" type="text" placeholder="🔎 Search..." value="{{ request.GET.search|default:'' }}"
+           class="p-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-indigo-500">
+    <select name="doc_type" class="p-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-indigo-500">
+      <option value="">All Types</option>
+      <option value="PAN" {% if request.GET.doc_type == 'PAN' %}selected{% endif %}>PAN</option>
+      <option value="AADHAAR" {% if request.GET.doc_type == 'AADHAAR' %}selected{% endif %}>Aadhaar</option>
+      <option value="GST" {% if request.GET.doc_type == 'GST' %}selected{% endif %}>GST</option>
+      <option value="FSSAI" {% if request.GET.doc_type == 'FSSAI' %}selected{% endif %}>FSSAI</option>
+      <option value="UDYAM" {% if request.GET.doc_type == 'UDYAM' %}selected{% endif %}>Udyam</option>
+      <option value="RESUME" {% if request.GET.doc_type == 'RESUME' %}selected{% endif %}>Resume</option>
+    </select>
+    <input name="date" type="date" value="{{ request.GET.date|default:'' }}"
+           class="p-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-indigo-500">
+    <input name="min_conf" type="number" min="0" max="100" value="{{ request.GET.min_conf|default:'' }}" placeholder="Min Conf %"
+           class="p-2.5 border border-gray-200 dark:border-gray-600 rounded-xl bg-white dark:bg-gray-800 text-sm focus:ring-2 focus:ring-indigo-500">
+    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl px-4 text-sm font-medium transition">Apply</button>
+  </form>
+</div>
+
+<!-- History Table -->
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow border border-gray-100 dark:border-gray-700 overflow-hidden mb-8">
+  <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+    <h2 class="font-semibold text-gray-700 dark:text-gray-200">Document History</h2>
+    <div class="flex gap-2">
+      <button onclick="exportTable('csv')" class="px-3 py-1.5 bg-green-600 hover:bg-green-700 text-white rounded-lg text-xs font-medium transition">⬇ CSV</button>
+      <button onclick="exportTable('excel')" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-xs font-medium transition">⬇ Excel</button>
+      <a href="{% url 'history' %}" class="px-3 py-1.5 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg text-xs font-medium hover:bg-gray-50 dark:hover:bg-gray-700 transition">View All →</a>
+    </div>
+  </div>
+  <div class="overflow-x-auto">
+    <table id="historyTable" class="w-full text-sm">
+      <thead class="bg-gray-50 dark:bg-gray-700/50 text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
+        <tr>
+          <th class="px-6 py-3 text-left">File</th>
+          <th class="px-6 py-3 text-left">Type</th>
+          <th class="px-6 py-3 text-left">Uploaded</th>
+          <th class="px-6 py-3 text-left">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-gray-50 dark:divide-gray-700">
+        {% for doc in history %}
+        <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition">
+          <td class="px-6 py-3 font-medium text-gray-800 dark:text-gray-200 max-w-xs truncate">{{ doc.short_name }}</td>
+          <td class="px-6 py-3">
+            <span class="px-2 py-0.5 rounded-full text-xs font-semibold
+              {% if doc.doc_type == 'PAN' %}bg-green-100 text-green-700
+              {% elif doc.doc_type == 'AADHAAR' %}bg-yellow-100 text-yellow-700
+              {% elif doc.doc_type == 'GST' %}bg-blue-100 text-blue-700
+              {% elif doc.doc_type == 'FSSAI' %}bg-purple-100 text-purple-700
+              {% elif doc.doc_type == 'UDYAM' %}bg-orange-100 text-orange-700
+              {% elif doc.doc_type == 'RESUME' %}bg-cyan-100 text-cyan-700
+              {% else %}bg-gray-100 text-gray-600{% endif %}">
+              {{ doc.doc_type }}
+            </span>
+          </td>
+          <td class="px-6 py-3 text-gray-500 dark:text-gray-400 text-xs">{{ doc.uploaded_at|date:"M d, Y H:i" }}</td>
+          <td class="px-6 py-3">
+            <div class="flex gap-2">
+              <button onclick="openModal('{{ doc.id }}')" class="px-3 py-1 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-xs transition">Quick View</button>
+              <a href="{% url 'document_detail' doc.id %}" class="px-3 py-1 border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300 rounded-lg text-xs hover:bg-gray-50 dark:hover:bg-gray-700 transition">Detail</a>
+            </div>
+            <script id="doc-data-{{ doc.id }}" type="application/json">{{ doc.extracted_data|safe }}</script>
+          </td>
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="4" class="px-6 py-12 text-center text-gray-400">
+            <div class="text-4xl mb-3">📭</div>
+            <p>No documents yet. <a href="{% url 'home' %}" class="text-indigo-600 hover:underline">Upload your first one →</a></p>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Quick View Modal -->
+<div id="dataModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-lg">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+      <h3 class="font-semibold text-gray-800 dark:text-gray-200">📑 Extracted Data</h3>
+      <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center hover:bg-gray-200 transition text-sm">✕</button>
+    </div>
+    <pre id="modalContent" class="px-6 py-4 bg-gray-50 dark:bg-gray-900 text-xs max-h-80 overflow-y-auto font-mono rounded-none"></pre>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-700">
+      <button onclick="dlJSON()" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm transition">⬇ JSON</button>
+      <button onclick="dlCSV()" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg text-sm transition">⬇ CSV</button>
+    </div>
+  </div>
+</div>
+
+<!-- Loading overlay -->
+<div id="loadingOverlay" class="hidden fixed inset-0 bg-black/60 z-[200] flex items-center justify-center">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl p-8 text-center shadow-2xl">
+    <div class="animate-spin rounded-full h-14 w-14 border-4 border-indigo-200 border-t-indigo-600 mx-auto mb-4"></div>
+    <p class="font-semibold text-gray-700 dark:text-gray-200">Processing document...</p>
+    <p class="text-xs text-gray-400 mt-1">This may take a few seconds</p>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+// Drag & drop
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+const filePreview = document.getElementById('filePreview');
+
+dropZone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => {
+  if (fileInput.files.length) {
+    const f = fileInput.files[0];
+    filePreview.innerHTML = '📄 ' + f.name + ' <span class="opacity-60">(' + (f.size/1024).toFixed(1) + ' KB)</span>';
+    filePreview.classList.remove('hidden');
+  }
+});
+['dragover','dragenter'].forEach(e => dropZone.addEventListener(e, ev => {
+  ev.preventDefault(); dropZone.classList.add('border-indigo-500','bg-indigo-50');
+}));
+['dragleave','dragend'].forEach(e => dropZone.addEventListener(e, () =>
+  dropZone.classList.remove('border-indigo-500','bg-indigo-50')
+));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('border-indigo-500','bg-indigo-50');
+  fileInput.files = e.dataTransfer.files;
+  fileInput.dispatchEvent(new Event('change'));
+});
+document.getElementById('uploadForm').addEventListener('submit', () =>
+  document.getElementById('loadingOverlay').classList.remove('hidden')
+);
+
+// Modal
+let modalData = {};
+function openModal(id) {
+  const el = document.getElementById('doc-data-' + id);
+  try { modalData = JSON.parse(el.textContent); } catch(e) { modalData = {}; }
+  const flat = {};
+  Object.entries(modalData).forEach(([k,v]) => {
+    flat[k] = (v && typeof v === 'object' && 'value' in v) ? v.value : v;
+  });
+  modalData = flat;
+  document.getElementById('modalContent').textContent = JSON.stringify(modalData, null, 2);
+  const m = document.getElementById('dataModal');
+  m.classList.remove('hidden'); m.classList.add('flex');
+}
+function closeModal() {
+  const m = document.getElementById('dataModal');
+  m.classList.add('hidden'); m.classList.remove('flex');
+}
+function dlJSON() {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(modalData,null,2)],{type:'application/json'}));
+  a.download = 'extracted.json'; a.click();
+}
+function dlCSV() {
+  const rows = [Object.keys(modalData).join(','), Object.values(modalData).map(v => JSON.stringify(v)).join(',')];
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([rows.join('\n')],{type:'text/csv'}));
+  a.download = 'extracted.csv'; a.click();
+}
+
+// Export table
+function exportTable(type) {
+  const rows = Array.from(document.querySelectorAll('#historyTable tr'));
+  const csv = rows.map(r =>
+    Array.from(r.querySelectorAll('th,td')).slice(0,3).map(c => '"' + c.innerText.trim() + '"').join(',')
+  ).join('\n');
+  const mime = type === 'excel' ? 'application/vnd.ms-excel' : 'text/csv';
+  const ext  = type === 'excel' ? 'xls' : 'csv';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv],{type:mime}));
+  a.download = 'history.' + ext; a.click();
+}
+
+// Charts
+const typeLabels = [{% for r in usage_stats %}'{{ r.doc_type }}'{% if not forloop.last %},{% endif %}{% endfor %}];
+const typeData   = [{% for r in usage_stats %}{{ r.total }}{% if not forloop.last %},{% endif %}{% endfor %}];
+const palette = ['#6366f1','#8b5cf6','#06b6d4','#10b981','#f59e0b','#ef4444','#ec4899','#14b8a6'];
+
+if (typeLabels.length) {
+  new Chart(document.getElementById('docTypeChart'), {
+    type: 'bar',
+    data: { labels: typeLabels, datasets: [{ label: 'Documents', data: typeData, backgroundColor: palette, borderRadius: 6 }] },
+    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } }
+  });
+} else {
+  document.getElementById('noChartData').classList.remove('hidden');
+  document.getElementById('docTypeChart').classList.add('hidden');
+}
+
+{% if not unlimited_tokens %}
+new Chart(document.getElementById('tokenPie'), {
+  type: 'doughnut',
+  data: {
+    labels: ['Used','Remaining'],
+    datasets: [{ data: [{{ used_tokens }}, {{ remaining_tokens }}], backgroundColor: ['#ef4444','#10b981'], borderWidth: 0, hoverOffset: 4 }]
+  },
+  options: { responsive: true, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
+});
+{% endif %}
+
+// Debounced filter
+const ff = document.getElementById('filterForm');
+let ft;
+ff.addEventListener('input', () => { clearTimeout(ft); ft = setTimeout(() => ff.submit(), 500); });
+</script>
+{% endblock %}

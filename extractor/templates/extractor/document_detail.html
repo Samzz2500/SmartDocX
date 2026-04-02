@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}{{ document.short_name }} — SmartDocX{% endblock %}
+{% block head %}
+<style>
+@media print {
+  nav, footer, .no-print { display: none !important; }
+  main { padding: 0 !important; }
+}
+</style>
+{% endblock %}
+{% block content %}
+
+<!-- Header -->
+<div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+  <div>
+    <div class="flex items-center gap-3 mb-1">
+      <a href="{% url 'history' %}" class="text-gray-400 hover:text-indigo-600 transition text-sm">← History</a>
+      <span class="text-gray-300 dark:text-gray-600">/</span>
+      <span class="text-sm text-gray-500 truncate max-w-xs">{{ document.short_name }}</span>
+    </div>
+    <h1 class="text-2xl font-extrabold text-gray-900 dark:text-white">{{ document.short_name }}</h1>
+    <div class="flex items-center gap-3 mt-2 flex-wrap">
+      <span class="px-2.5 py-1 rounded-full text-xs font-semibold
+        {% if document.doc_type == 'PAN' %}bg-green-100 text-green-700
+        {% elif document.doc_type == 'AADHAAR' %}bg-yellow-100 text-yellow-700
+        {% elif document.doc_type == 'GST' %}bg-blue-100 text-blue-700
+        {% elif document.doc_type == 'FSSAI' %}bg-purple-100 text-purple-700
+        {% elif document.doc_type == 'UDYAM' %}bg-orange-100 text-orange-700
+        {% elif document.doc_type == 'RESUME' %}bg-cyan-100 text-cyan-700
+        {% else %}bg-gray-100 text-gray-600{% endif %}">
+        {{ document.doc_type }}
+      </span>
+      <span class="text-xs text-gray-400">Uploaded {{ document.uploaded_at|date:"M d, Y H:i" }}</span>
+      {% if document.confidence %}
+      <span class="text-xs {% if document.is_high_confidence %}text-green-600{% else %}text-yellow-600{% endif %} font-medium">
+        {{ document.confidence|floatformat:0 }}% confidence
+      </span>
+      {% endif %}
+    </div>
+  </div>
+  <div class="flex flex-wrap gap-2 no-print">
+    <a href="{% url 'download_csv' document.id %}" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-sm font-medium transition">⬇ CSV</a>
+    <a href="{% url 'download_json' document.id %}" class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-xl text-sm font-medium transition">⬇ JSON</a>
+    <button onclick="window.print()" class="px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white rounded-xl text-sm font-medium transition">🖨️ Print</button>
+    <button onclick="openPreview()" class="px-4 py-2 border border-indigo-600 text-indigo-600 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 rounded-xl text-sm font-medium transition">👁️ Preview JSON</button>
+  </div>
+</div>
+
+<!-- Resume layout -->
+{% if resume.is_resume %}
+<div class="grid md:grid-cols-3 gap-6 mb-8">
+  <div class="md:col-span-2 space-y-4">
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 border border-gray-100 dark:border-gray-700">
+      <h2 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">👤 Contact Info</h2>
+      <div class="grid grid-cols-2 gap-3 text-sm">
+        <div><p class="text-xs text-gray-400 uppercase tracking-wide">Name</p><p class="font-medium mt-0.5">{{ resume.candidate_name|default:"—" }}</p></div>
+        <div><p class="text-xs text-gray-400 uppercase tracking-wide">Email</p><p class="font-medium mt-0.5">{{ resume.email|default:"—" }}</p></div>
+        <div><p class="text-xs text-gray-400 uppercase tracking-wide">Phone</p><p class="font-medium mt-0.5">{{ resume.phone|default:"—" }}</p></div>
+        <div><p class="text-xs text-gray-400 uppercase tracking-wide">Experience</p><p class="font-medium mt-0.5">{{ resume.experience_years|default:"—" }}</p></div>
+      </div>
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 border border-gray-100 dark:border-gray-700">
+      <h2 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">🎓 Education</h2>
+      {% if resume.education_items %}
+        <ul class="space-y-1 text-sm">
+          {% for e in resume.education_items %}
+          <li class="flex items-center gap-2">
+            <span class="w-1.5 h-1.5 rounded-full bg-indigo-400"></span>
+            {% if e.degree %}<span class="font-medium">{{ e.degree }}</span>{% endif %}
+            {% if e.years %}<span class="text-gray-400">{{ e.years }}</span>{% endif %}
+          </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-sm text-gray-500">{{ resume.education|default:"No education details found." }}</p>
+      {% endif %}
+    </div>
+    <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 border border-gray-100 dark:border-gray-700">
+      <h2 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">💼 Experience</h2>
+      <p class="text-sm text-gray-600 dark:text-gray-300">{{ resume.experience|default:"No experience section found." }}</p>
+    </div>
+  </div>
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 border border-gray-100 dark:border-gray-700 h-fit">
+    <h2 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">🛠️ Skills</h2>
+    {% if resume.skills %}
+      <div class="flex flex-wrap gap-2">
+        {% for s in resume.skills %}
+        <span class="px-2.5 py-1 text-xs rounded-full bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300 font-medium">{{ s }}</span>
+        {% endfor %}
+      </div>
+    {% else %}
+      <p class="text-sm text-gray-500">No skills detected.</p>
+    {% endif %}
+  </div>
+</div>
+{% endif %}
+
+<!-- Extracted Fields -->
+<div class="grid md:grid-cols-2 gap-4 mb-8">
+  {% for key, value in extracted_data.items %}
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-5 border border-gray-100 dark:border-gray-700 hover:border-indigo-200 dark:hover:border-indigo-700 transition">
+    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">{{ key }}</p>
+    <p class="text-base font-semibold text-gray-900 dark:text-gray-100 break-words">{{ value|default:"—" }}</p>
+  </div>
+  {% empty %}
+  <div class="col-span-2 text-center py-12 text-gray-400">
+    <div class="text-4xl mb-3">🔍</div>
+    <p>No fields could be extracted from this document.</p>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- AI Insights -->
+<div class="bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-gray-800 dark:to-gray-700 rounded-2xl shadow p-6 border border-indigo-100 dark:border-gray-600 mb-8">
+  <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">🤖 AI Insights</h3>
+  <p class="text-sm text-gray-600 dark:text-gray-300 mb-4">{{ insights.summary }}</p>
+  {% if insights.keywords %}
+  <div class="flex flex-wrap gap-2">
+    {% for kw in insights.keywords %}
+    <span class="px-2.5 py-1 text-xs rounded-full bg-white dark:bg-gray-800 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-700 font-medium">{{ kw }}</span>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% if insights.missing_fields %}
+  <p class="text-xs text-red-500 mt-3">⚠ Missing fields: {{ insights.missing_fields|join:", " }}</p>
+  {% endif %}
+</div>
+
+<!-- Entity Tags -->
+<div class="bg-white dark:bg-gray-800 rounded-2xl shadow p-6 border border-gray-100 dark:border-gray-700 mb-8">
+  <h3 class="font-semibold text-gray-700 dark:text-gray-200 mb-3">🧠 Entity Highlights</h3>
+  <div class="flex flex-wrap gap-2">
+    {% for key, value in extracted_data.items %}
+    {% with val=value.value|default:value %}
+    {% if val %}
+    <span class="px-2.5 py-1 text-xs rounded-lg font-medium
+      {% if 'name' in key|lower %}bg-blue-100 text-blue-700
+      {% elif 'date' in key|lower %}bg-emerald-100 text-emerald-700
+      {% elif 'address' in key|lower %}bg-purple-100 text-purple-700
+      {% elif 'number' in key|lower or 'id' in key|lower %}bg-indigo-100 text-indigo-700
+      {% else %}bg-gray-100 text-gray-600{% endif %}">
+      {{ key }}: {{ val }}
+    </span>
+    {% endif %}
+    {% endwith %}
+    {% endfor %}
+  </div>
+</div>
+
+<!-- JSON Preview Modal -->
+<div id="previewModal" class="fixed inset-0 bg-black/60 hidden items-center justify-center z-50 p-4">
+  <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl">
+    <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+      <h3 class="font-semibold">Preview JSON</h3>
+      <button onclick="closePreview()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-sm hover:bg-gray-200 transition">✕</button>
+    </div>
+    <pre class="px-6 py-4 bg-gray-50 dark:bg-gray-900 text-xs max-h-96 overflow-y-auto font-mono rounded-none">{{ extracted_data|safe }}</pre>
+    <div class="flex justify-end gap-3 px-6 py-4 border-t border-gray-100 dark:border-gray-700">
+      <a href="{% url 'download_json' document.id %}" class="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm transition">⬇ Download JSON</a>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+function openPreview() {
+  const m = document.getElementById('previewModal');
+  m.classList.remove('hidden'); m.classList.add('flex');
+}
+function closePreview() {
+  const m = document.getElementById('previewModal');
+  m.classList.add('hidden'); m.classList.remove('flex');
+}
+</script>
+{% endblock %}

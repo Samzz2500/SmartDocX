@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div class="flex flex-col items-center justify-center min-h-[70vh] text-center space-y-6">
+  
+  <!-- Success Icon -->
+  <div class="w-24 h-24 flex items-center justify-center rounded-full bg-green-100 text-green-600 shadow-lg">
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-14 w-14" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+    </svg>
+  </div>
+
+  <!-- Message -->
+  <h1 class="text-4xl font-bold text-gray-900">🎉 Payment Successful!</h1>
+  <p class="text-gray-600 text-lg">
+    You are now subscribed to the <b>{{ plan.name }}</b> Plan.<br>
+    🎟 <b>{{ plan.tokens }}</b> tokens have been credited to your account.
+  </p>
+
+  <!-- Redirect Button -->
+  <a href="{% url 'dashboard' %}" 
+     class="mt-6 bg-blue-600 text-white py-3 px-8 rounded-xl font-semibold hover:bg-blue-700 transition shadow-lg">
+    Go to Dashboard →
+  </a>
+</div>
+
+{% endblock %}
